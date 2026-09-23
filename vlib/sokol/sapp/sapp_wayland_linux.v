@@ -134,7 +134,14 @@ $if sokol_wayland ? {
 		if key != .invalid {
 			return key
 		}
-		return match keysym {
+		// A held Shift (or Caps Lock) reports uppercase keysyms. Fold ASCII
+		// capitals to lowercase so Shift+letter resolves to the physical key
+		// instead of falling through to .invalid and dropping the event.
+		mut sym := keysym
+		if sym >= 0x41 && sym <= 0x5A {
+			sym += 32
+		}
+		return match sym {
 			xkb_key_space { .space }
 			xkb_key_apostrophe { .apostrophe }
 			xkb_key_comma { .comma }
