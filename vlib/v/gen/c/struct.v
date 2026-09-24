@@ -6467,9 +6467,12 @@ fn (g &FlatGen) header_c_struct_needs_compat_typedef(name string) bool {
 	if g.inlined_c_structs[name[2..]] {
 		return true
 	}
-	if info := g.struct_decl_infos[name] {
-		return info.file.ends_with('.c.v') || c_source_looks_header_backed(info.file)
-	}
+	// A V-side mirror in a .c.v file describes a type owned by native code,
+	// typically a system header the scan never sees (e.g. X11's
+	// anonymous-struct typedefs like XIEventMask). Guessing a
+	// `typedef struct name name;` for those clashes with the real header
+	// typedef, so only mappings the header scan has actually seen get the
+	// compatibility alias.
 	return false
 }
 
